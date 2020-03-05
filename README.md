@@ -1,3 +1,10 @@
+# Rxjs-context-test
+
+實驗目的: 將 Rxjs observable 放進 context，給 provider 底下 component 共享 observable 並 subscribe event，看會不會造成 provider children re-render
+
+此例使用 `fromEvent(window, 'scroll')` (在 window 物件註冊 scroll event)
+context provider 底下的 `<RenderCounter />` 使用此 observable 並 subscribe event
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
