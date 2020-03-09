@@ -2,52 +2,43 @@ import React, { createContext, useState, useContext, useEffect, useMemo } from '
 import logo from './logo.svg';
 import './App.css';
 import { fromEvent } from "rxjs";
+import { share } from 'rxjs/operators';
 
 const ScrollContext = createContext({ scrollObserver: undefined })
-
-let counter = 0;
 
 function RenderCounter(props) {
   const { name } = props
   const { scrollObserver } = useContext(ScrollContext)
+  const [positionY, setPositionY] = useState()
+
   useEffect(() => {
     console.log('subscribe')
-    const subscription = scrollObserver.subscribe(e => console.log(`${name} counter`, e))
+    const subscription = scrollObserver.subscribe(() => setPositionY(window.scrollY))
 
     return () => {
       console.log('unsubscribe')
       subscription.unsubscribe()
     }
   }, [scrollObserver, name])
-  counter = counter + 1
   return (
-    <div>{name} counter: {counter}</div>
+    <div>name: {name}; scrollY: {positionY}</div>
   )
 }
 
 function App() {
-  const [, reRender] = useState()
-  const scrollObserver = useMemo(() => fromEvent(window, 'scroll'), [])
+  const [counterAmount, setCounterAmount] = useState(10)
+  const scrollObserver = useMemo(() => fromEvent(window, 'scroll'), []).pipe(share())
+
+  console.log('render')
 
   return (
     <ScrollContext.Provider value={{ scrollObserver }}>
-      <div className="App" style={{ height: 1000 }}>
+      <div className="App" style={{ minHeight: 1000 }}>
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-          <button onClick={() => reRender({})}>click re-render</button>
-          <RenderCounter name={'1'} />
-          <RenderCounter name={'2'} />
+          <button onClick={() => setCounterAmount(amount => amount + 1)}>add one counter</button>
+          <button onClick={() => setCounterAmount(amount => amount - 1 < 1 ? 1 : amount - 1)}>remove one counter</button>
+          {[...Array(counterAmount)].map((_, index) => <RenderCounter name={index} key={index} />)}
         </header>
       </div>
     </ScrollContext.Provider>
